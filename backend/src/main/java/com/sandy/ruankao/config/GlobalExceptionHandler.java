@@ -12,15 +12,17 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(IllegalArgumentException exception) {
-        return ResponseEntity.badRequest().body(ApiResponse.error(exception.getMessage()));
-    }
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ResponseEntity<ApiResponse<Void>> handleIllegalArgument(
+      IllegalArgumentException exception) {
+    return ResponseEntity.badRequest().body(ApiResponse.error(exception.getMessage()));
+  }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ApiResponse<Void>> handleValidation(MethodArgumentNotValidException exception) {
-        // 返回第一个字段校验错误，使用户可以按顺序修正输入内容。
-        String message = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
-        return ResponseEntity.badRequest().body(ApiResponse.error(message));
-    }
+  @ExceptionHandler(MethodArgumentNotValidException.class)
+  public ResponseEntity<ApiResponse<Void>> handleValidation(
+      MethodArgumentNotValidException exception) {
+    // 返回第一个字段校验错误，使用户可以按顺序修正输入内容。
+    String message = exception.getBindingResult().getAllErrors().get(0).getDefaultMessage();
+    return ResponseEntity.badRequest().body(ApiResponse.error(message));
+  }
 }

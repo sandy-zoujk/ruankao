@@ -5,6 +5,22 @@ frontend/dist/
 # Java/Maven build output
 backend/target/
 
+# Python helper cache
+__pycache__/
+*.py[cod]
+
+# Local software-copyright materials and demo environment
+docs/software-copyright/
+docs/screenshots/
+docs/demo-question-data.sql
+tools/generate_copyright_docs.py
+tools/fontconfig-macos.conf
+tools/demo-screenshot-data.sql
+tools/demo-screenshot-data.local.sql
+tools/demo-screenshot.env
+tools/demo-diagrams/
+tmp/
+
 # IDE and editor metadata
 .idea/
 **/.idea/

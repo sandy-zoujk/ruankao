@@ -1,4 +1,4 @@
-# 知行软考学习计划与知识管理系统
+# 知行软考学习与知识管理系统 V1.0
 
 一个面向信息系统项目管理师备考的全栈项目，前端使用 Vue 3，后端使用 Spring Boot，数据存储使用 MySQL。
 
@@ -37,6 +37,10 @@ export MYSQL_USERNAME=root
 export MYSQL_PASSWORD=你的密码
 export APP_ADMIN_USERNAME=admin
 export JWT_SECRET=至少32字节的生产密钥
+# 以下软件身份信息会同步显示在登录页和“关于软件”中
+export APP_SOFTWARE_NAME=知行软考学习与知识管理系统
+export APP_SOFTWARE_VERSION=V1.0
+export APP_SOFTWARE_DEVELOPER=邹军科
 ```
 
 ## 2. 启动后端
@@ -73,6 +77,9 @@ Vite 会把 `/api` 请求代理到 `http://localhost:8080`。
 - 学习计划创建、完成和删除
 - 知识章节掌握度维护
 - 错题录入、复习状态和删除
+- 按章节随机选择题练习、统一交卷判分、成绩统计与错题自动收录
+- 管理员题库维护和 Excel 模板批量导入
+- 公开授权网页教程抓取、审核发布、小节学习与用户进度跟踪
 - 挣值计算器
 - 统计接口与图表
 

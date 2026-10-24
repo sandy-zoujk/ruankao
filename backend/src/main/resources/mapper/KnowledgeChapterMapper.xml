@@ -5,6 +5,12 @@
         SELECT * FROM knowledge_chapter WHERE user_id = #{userId} ORDER BY priority DESC, name ASC
     </select>
 
+    <select id="findPage" resultType="com.sandy.ruankao.entity.KnowledgeChapter">
+        SELECT * FROM knowledge_chapter WHERE user_id = #{userId}
+        ORDER BY priority DESC, name ASC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
     <select id="findById" resultType="com.sandy.ruankao.entity.KnowledgeChapter">
         SELECT * FROM knowledge_chapter WHERE id = #{id} AND user_id = #{userId}
     </select>

@@ -1,9 +1,9 @@
 package com.sandy.ruankao.mapper;
 
 import com.sandy.ruankao.entity.KnowledgeChapter;
+import java.util.List;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
-import java.util.List;
 
 /**
  * 知识章节数据访问接口，SQL 定义在对应的 MyBatis XML 文件中。
@@ -12,13 +12,16 @@ import java.util.List;
  */
 @Mapper
 public interface KnowledgeChapterMapper {
-    List<KnowledgeChapter> findAll(@Param("userId") Long userId);
+  List<KnowledgeChapter> findAll(@Param("userId") Long userId);
 
-    KnowledgeChapter findById(@Param("id") Long id, @Param("userId") Long userId);
+  List<KnowledgeChapter> findPage(
+      @Param("userId") Long userId, @Param("limit") int limit, @Param("offset") long offset);
 
-    long count(@Param("userId") Long userId);
+  KnowledgeChapter findById(@Param("id") Long id, @Param("userId") Long userId);
 
-    int insert(KnowledgeChapter chapter);
+  long count(@Param("userId") Long userId);
 
-    int update(KnowledgeChapter chapter);
+  int insert(KnowledgeChapter chapter);
+
+  int update(KnowledgeChapter chapter);
 }

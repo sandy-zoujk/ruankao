@@ -4,6 +4,10 @@ server:
     context-path: /api
 
 spring:
+  servlet:
+    multipart:
+      max-file-size: 5MB
+      max-request-size: 5MB
   datasource:
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/${MYSQL_DATABASE:ruankao_study}?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false
     username: ${MYSQL_USERNAME:root}
@@ -22,6 +26,12 @@ mybatis:
     map-underscore-to-camel-case: true
 
 app:
+  software:
+    name: ${APP_SOFTWARE_NAME:知行软考学习与知识管理系统}
+    version: ${APP_SOFTWARE_VERSION:V1.0}
+    purpose: ${APP_SOFTWARE_PURPOSE:面向信息系统项目管理师备考的学习计划、题库练习与知识管理}
+    developer: ${APP_SOFTWARE_DEVELOPER:邹军科}
+    copyright: ${APP_SOFTWARE_COPYRIGHT:版权所有}
   admin:
     username: ${APP_ADMIN_USERNAME:admin}
   jwt:

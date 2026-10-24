@@ -8,9 +8,14 @@ import javax.validation.constraints.NotNull;
  * @author zoujunke
  */
 public class UserStatusRequest {
-    @NotNull(message = "请指定账号状态")
-    private Boolean enabled;
+  @NotNull(message = "请指定账号状态")
+  private Boolean enabled;
 
-    public Boolean getEnabled() { return enabled; }
-    public void setEnabled(Boolean enabled) { this.enabled = enabled; }
+  public Boolean getEnabled() {
+    return enabled;
+  }
+
+  public void setEnabled(Boolean enabled) {
+    this.enabled = enabled;
+  }
 }

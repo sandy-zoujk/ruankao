@@ -18,6 +18,14 @@ body { margin: 0; min-width: 1100px; }
 .exam-card small { color: #88aaa3; }
 .exam-card strong { margin: 8px 0 3px; color: #f4ca75; font-size: 17px; }
 .exam-card span { color: #d2e0dd; font-size: 12px; }
+.software-meta { display: flex; align-items: center; gap: 8px; width: 100%; margin-top: 12px; padding: 8px 10px; border: 0; background: transparent; color: #91aaa5; font: inherit; text-align: left; cursor: pointer; }
+.software-meta:hover { color: #f4ca75; }
+.software-meta span, .software-meta small { display: block; }
+.software-meta span { min-width: 0; font-size: 11px; line-height: 1.45; }
+.software-meta small { color: #76958f; }
+.about-software { display: flex; align-items: center; gap: 16px; margin-bottom: 22px; }
+.about-software h2 { margin: 0 0 8px; color: #173b36; font-size: 21px; }
+.about-mark { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 15px; background: #e7bc66; color: #143c37; font-size: 26px; font-weight: 900; }
 .topbar { height: 94px; display: flex; align-items: center; justify-content: space-between; padding: 21px 34px; background: rgba(255,255,255,.82); border-bottom: 1px solid #e3e9e5; backdrop-filter: blur(8px); }
 .topbar h1 { margin: 2px 0 0; font-size: 25px; }
 .eyebrow { color: #7a8d87; font-size: 10px; letter-spacing: 1.8px; }
@@ -52,6 +60,44 @@ body { margin: 0; min-width: 1100px; }
 .result-item span { display: block; color: #74837e; font-size: 12px; }
 .result-item strong { display: block; margin-top: 8px; color: #153d38; font-size: 24px; }
 .question-body { white-space: pre-wrap; line-height: 1.7; }
+.practice-setup { padding: 28px; }
+.practice-setup h2 { margin-top: 0; }
+.form-tip { margin-left: 14px; color: #78908c; }
+.practice-question { margin-bottom: 16px; padding: 22px 26px; }
+.practice-question h3 { margin: 0 0 18px; line-height: 1.65; font-size: 16px; }
+.option-list { display: flex; flex-direction: column; align-items: flex-start; gap: 14px; }
+.option-list .el-radio { height: auto; white-space: normal; line-height: 1.55; }
+.result-summary { display: flex; align-items: center; gap: 24px; padding: 22px 28px; margin-bottom: 18px; }
+.result-summary strong { color: #16776d; font-size: 34px; }
+.result-summary .el-button { margin-left: auto; }
+.answer-correct { border-left: 4px solid #37a77a; }
+.answer-wrong { border-left: 4px solid #d65d56; }
+.explanation { padding: 12px 15px; border-radius: 8px; background: #f5f8f7; line-height: 1.65; }
+.question-actions, .filter-row { display: flex; align-items: center; gap: 10px; }
+.filter-row { margin-bottom: 18px; }
+.filter-row .el-input, .filter-row .el-select { width: 220px; }
+.el-pagination { margin-top: 18px; justify-content: flex-end; }
+.tutorial-progress { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center; padding: 20px 24px; margin-bottom: 20px; }
+.tutorial-progress span, .tutorial-progress strong { display: block; }
+.tutorial-progress strong { margin-top: 5px; font-size: 20px; }
+.tutorial-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(320px,1fr)); gap: 18px; }
+.tutorial-card { padding: 22px; }
+.tutorial-card h3 { margin: 14px 0 8px; }
+.tutorial-card p { min-height: 48px; color: #627673; line-height: 1.6; }
+.tutorial-card > div:last-child { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; }
+.tutorial-layout { display: grid; grid-template-columns: 230px minmax(0,1fr); gap: 20px; align-items: start; }
+.tutorial-toc { position: sticky; top: 84px; padding: 18px; }
+.tutorial-toc a { display: block; margin-top: 12px; color: #426965; text-decoration: none; line-height: 1.45; }
+.tutorial-section { padding: 24px 28px; margin-bottom: 18px; scroll-margin-top: 80px; }
+.tutorial-section-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e5ecea; }
+.tutorial-content { line-height: 1.8; overflow-wrap: anywhere; }
+.tutorial-content img, .tutorial-preview img { max-width: 100%; height: auto; }
+.tutorial-content table, .tutorial-preview table { width: 100%; border-collapse: collapse; }
+.tutorial-content td, .tutorial-content th, .tutorial-preview td, .tutorial-preview th { padding: 8px; border: 1px solid #dce5e3; }
+.source-detail { padding: 8px 24px; }
+.error-text { color: #c45656; }
+.tutorial-preview { padding: 12px 0; border-top: 1px solid #e5ecea; line-height: 1.7; }
+@media (max-width: 900px) { .tutorial-layout { grid-template-columns: 1fr; } .tutorial-toc { position: static; } }
 .user-filter { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; padding: 18px; }
 .user-table { overflow: hidden; }
 .status-dot { display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; }

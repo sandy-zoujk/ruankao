@@ -1,81 +1,160 @@
 <script setup>
-import { computed, onMounted, reactive, ref } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { Calendar, Collection, DataAnalysis, EditPen, HomeFilled, UserFilled } from '@element-plus/icons-vue'
-import { authApi } from './api'
+import { computed, onMounted, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage } from "element-plus";
+import {
+  Calendar,
+  Collection,
+  DataAnalysis,
+  EditPen,
+  HomeFilled,
+  UserFilled,
+  DocumentChecked,
+  Management,
+  Reading,
+  Link,
+  InfoFilled,
+} from "@element-plus/icons-vue";
+import { authApi, softwareApi } from "./api";
 
-const route = useRoute()
-const router = useRouter()
-const pageTitle = computed(() => route.meta.title || '软考进阶台')
-let savedUser = {}
-try { savedUser = JSON.parse(localStorage.getItem('ruankao_user') || '{}') } catch (_) { /* 使用空用户 */ }
-const currentUser = reactive({ ...savedUser })
-const username = computed(() => currentUser.username || '备考用户')
-const isAdmin = computed(() => currentUser.role === 'ADMIN')
-
-const passwordVisible = ref(false), passwordLoading = ref(false), passwordFormRef = ref()
-const passwordForm = reactive({ oldPassword: '', newPassword: '', confirmPassword: '' })
-const passwordRules = {
-  oldPassword: [{ required: true, message: '请输入当前密码', trigger: 'blur' }],
-  newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 50, message: '新密码长度为6-50位', trigger: 'blur' }
-  ],
-  confirmPassword: [{
-    validator: (_, value, callback) => value === passwordForm.newPassword
-      ? callback() : callback(new Error('两次输入的新密码不一致')),
-    trigger: 'blur'
-  }]
+const route = useRoute();
+const router = useRouter();
+const pageTitle = computed(() => route.meta.title || "软考进阶台");
+let savedUser = {};
+try {
+  savedUser = JSON.parse(localStorage.getItem("ruankao_user") || "{}");
+} catch (_) {
+  /* 使用空用户 */
 }
+const currentUser = reactive({ ...savedUser });
+const username = computed(() => currentUser.username || "备考用户");
+const isAdmin = computed(() => currentUser.role === "ADMIN");
+const roleLabel = computed(
+  () => currentUser.roleLabel || (isAdmin.value ? "管理员" : "普通用户"),
+);
+const permissionSummary = computed(
+  () =>
+    currentUser.permissionSummary || (isAdmin.value ? "全部权限" : "学习权限"),
+);
+const softwareInfo = reactive({
+  name: "知行软考学习与知识管理系统",
+  version: "V1.0",
+  fullName: "知行软考学习与知识管理系统 V1.0",
+  purpose: "面向信息系统项目管理师备考的学习计划、题库练习与知识管理",
+  developer: "邹军科",
+  copyright: "版权所有",
+});
+const aboutVisible = ref(false);
+
+const passwordVisible = ref(false),
+  passwordLoading = ref(false),
+  passwordFormRef = ref();
+const passwordForm = reactive({
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
+const passwordRules = {
+  oldPassword: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
+  newPassword: [
+    { required: true, message: "请输入新密码", trigger: "blur" },
+    { min: 6, max: 50, message: "新密码长度为6-50位", trigger: "blur" },
+  ],
+  confirmPassword: [
+    {
+      validator: (_, value, callback) =>
+        value === passwordForm.newPassword
+          ? callback()
+          : callback(new Error("两次输入的新密码不一致")),
+      trigger: "blur",
+    },
+  ],
+};
 
 const baseMenus = [
-  { path: '/', label: '学习总览', icon: HomeFilled },
-  { path: '/plans', label: '学习计划', icon: Calendar },
-  { path: '/chapters', label: '章节掌握', icon: Collection },
-  { path: '/wrong-questions', label: '错题复盘', icon: EditPen },
-  { path: '/calculator', label: '挣值计算', icon: DataAnalysis }
-]
-const menus = computed(() => isAdmin.value
-  ? [...baseMenus, { path: '/users', label: '用户管理', icon: UserFilled }]
-  : baseMenus)
+  { path: "/", label: "学习总览", icon: HomeFilled },
+  { path: "/plans", label: "学习计划", icon: Calendar },
+  { path: "/chapters", label: "章节掌握", icon: Collection },
+  { path: "/practice", label: "选择题练习", icon: DocumentChecked },
+  { path: "/tutorials", label: "在线教程", icon: Reading },
+  { path: "/wrong-questions", label: "错题复盘", icon: EditPen },
+  { path: "/calculator", label: "挣值计算", icon: DataAnalysis },
+];
+const menus = computed(() =>
+  isAdmin.value
+    ? [
+        ...baseMenus,
+        { path: "/question-bank", label: "题库管理", icon: Management },
+        { path: "/tutorial-sources", label: "教程来源", icon: Link },
+        { path: "/users", label: "用户管理", icon: UserFilled },
+      ]
+    : baseMenus,
+);
 
 function clearLogin() {
-  localStorage.removeItem('ruankao_token')
-  localStorage.removeItem('ruankao_user')
+  localStorage.removeItem("ruankao_token");
+  localStorage.removeItem("ruankao_user");
 }
 
 async function refreshProfile() {
-  if (!localStorage.getItem('ruankao_token')) return
-  const response = await authApi.me()
-  Object.assign(currentUser, response.data)
-  localStorage.setItem('ruankao_user', JSON.stringify({ ...currentUser }))
+  if (!localStorage.getItem("ruankao_token")) return;
+  const response = await authApi.me();
+  Object.assign(currentUser, response.data);
+  localStorage.setItem("ruankao_user", JSON.stringify({ ...currentUser }));
+}
+
+async function refreshSoftwareInfo() {
+  const response = await softwareApi.info();
+  Object.assign(softwareInfo, response.data);
 }
 
 async function logout() {
-  try { await authApi.logout() } catch (_) { /* 本地仍需退出 */ }
-  clearLogin()
-  router.replace('/login')
+  try {
+    await authApi.logout();
+  } catch (_) {
+    /* 本地仍需退出 */
+  }
+  clearLogin();
+  router.replace("/login");
 }
 
 function openPasswordDialog() {
-  Object.assign(passwordForm, { oldPassword: '', newPassword: '', confirmPassword: '' })
-  passwordVisible.value = true
+  Object.assign(passwordForm, {
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  passwordVisible.value = true;
 }
 
 async function changePassword() {
-  await passwordFormRef.value.validate()
-  passwordLoading.value = true
+  await passwordFormRef.value.validate();
+  passwordLoading.value = true;
   try {
-    await authApi.changePassword({ oldPassword: passwordForm.oldPassword, newPassword: passwordForm.newPassword })
-    ElMessage.success('密码修改成功，请重新登录')
-    passwordVisible.value = false
-    clearLogin()
-    router.replace('/login')
-  } finally { passwordLoading.value = false }
+    await authApi.changePassword({
+      oldPassword: passwordForm.oldPassword,
+      newPassword: passwordForm.newPassword,
+    });
+    ElMessage.success("密码修改成功，请重新登录");
+    passwordVisible.value = false;
+    clearLogin();
+    router.replace("/login");
+  } finally {
+    passwordLoading.value = false;
+  }
 }
 
-onMounted(() => refreshProfile().catch(() => {}))
+onMounted(() => {
+  refreshProfile().catch(() => {});
+  refreshSoftwareInfo().catch(() => {});
+});
+
+watch(
+  () => route.path,
+  () => {
+    if (!route.meta.public) refreshProfile().catch(() => {});
+  },
+);
 </script>
 
 <template>
@@ -97,36 +176,114 @@ onMounted(() => refreshProfile().catch(() => {}))
         <strong>2027 上半年</strong>
         <span>信息系统项目管理师</span>
       </div>
+      <button class="software-meta" type="button" @click="aboutVisible = true">
+        <el-icon><InfoFilled /></el-icon>
+        <span
+          >{{ softwareInfo.name
+          }}<small>{{ softwareInfo.version }}</small></span
+        >
+      </button>
     </el-aside>
     <el-container>
       <el-header class="topbar">
-        <div><span class="eyebrow">STUDY WORKSPACE</span><h1>{{ pageTitle }}</h1></div>
+        <div>
+          <span class="eyebrow">STUDY WORKSPACE</span>
+          <h1>{{ pageTitle }}</h1>
+        </div>
         <div class="user-box">
-          <div class="user-avatar">{{ username.slice(0, 1).toUpperCase() }}</div>
-          <div class="user-identity"><strong>{{ username }}</strong><span>{{ isAdmin ? '管理员' : '普通用户' }}</span></div>
-          <el-button link type="primary" @click="openPasswordDialog">修改密码</el-button>
+          <div class="user-avatar">
+            {{ username.slice(0, 1).toUpperCase() }}
+          </div>
+          <div class="user-identity">
+            <strong>{{ username }}</strong
+            ><span>{{ roleLabel }} · {{ permissionSummary }}</span>
+          </div>
+          <el-button link type="primary" @click="openPasswordDialog"
+            >修改密码</el-button
+          >
           <el-button link type="primary" @click="logout">退出</el-button>
         </div>
       </el-header>
       <el-main class="main-content"><router-view /></el-main>
     </el-container>
 
-    <el-dialog v-model="passwordVisible" title="修改密码" width="440px" append-to-body>
-      <el-form ref="passwordFormRef" :model="passwordForm" :rules="passwordRules" label-position="top">
+    <el-dialog
+      v-model="passwordVisible"
+      title="修改密码"
+      width="440px"
+      append-to-body
+    >
+      <el-form
+        ref="passwordFormRef"
+        :model="passwordForm"
+        :rules="passwordRules"
+        label-position="top"
+      >
         <el-form-item label="当前密码" prop="oldPassword">
-          <el-input v-model="passwordForm.oldPassword" type="password" show-password autocomplete="current-password" />
+          <el-input
+            v-model="passwordForm.oldPassword"
+            type="password"
+            show-password
+            autocomplete="current-password"
+          />
         </el-form-item>
         <el-form-item label="新密码" prop="newPassword">
-          <el-input v-model="passwordForm.newPassword" type="password" show-password autocomplete="new-password" />
+          <el-input
+            v-model="passwordForm.newPassword"
+            type="password"
+            show-password
+            autocomplete="new-password"
+          />
         </el-form-item>
         <el-form-item label="确认新密码" prop="confirmPassword">
-          <el-input v-model="passwordForm.confirmPassword" type="password" show-password autocomplete="new-password" />
+          <el-input
+            v-model="passwordForm.confirmPassword"
+            type="password"
+            show-password
+            autocomplete="new-password"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="passwordVisible=false">取消</el-button>
-        <el-button type="primary" :loading="passwordLoading" @click="changePassword">确认修改</el-button>
+        <el-button @click="passwordVisible = false">取消</el-button>
+        <el-button
+          type="primary"
+          :loading="passwordLoading"
+          @click="changePassword"
+          >确认修改</el-button
+        >
       </template>
+    </el-dialog>
+
+    <el-dialog
+      v-model="aboutVisible"
+      title="关于软件"
+      width="520px"
+      append-to-body
+    >
+      <div class="about-software">
+        <div class="about-mark">软</div>
+        <div>
+          <h2>{{ softwareInfo.name }}</h2>
+          <el-tag effect="plain">{{ softwareInfo.version }}</el-tag>
+        </div>
+      </div>
+      <el-descriptions :column="1" border>
+        <el-descriptions-item label="主要用途">{{
+          softwareInfo.purpose
+        }}</el-descriptions-item>
+        <el-descriptions-item label="开发者">{{
+          softwareInfo.developer
+        }}</el-descriptions-item>
+        <el-descriptions-item label="版权声明">{{
+          softwareInfo.copyright
+        }}</el-descriptions-item>
+      </el-descriptions>
+      <template #footer
+        ><el-button type="primary" @click="aboutVisible = false"
+          >关闭</el-button
+        ></template
+      >
     </el-dialog>
   </el-container>
 </template>
