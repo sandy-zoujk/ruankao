@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sandy.ruankao.mapper.StudyPlanMapper">
+    <select id="findAll" resultType="com.sandy.ruankao.entity.StudyPlan">
+        SELECT * FROM study_plan WHERE user_id = #{userId} ORDER BY plan_date ASC
+    </select>
+
+    <select id="findById" resultType="com.sandy.ruankao.entity.StudyPlan">
+        SELECT * FROM study_plan WHERE id = #{id} AND user_id = #{userId}
+    </select>
+
+    <select id="findBetween" resultType="com.sandy.ruankao.entity.StudyPlan">
+        SELECT * FROM study_plan
+        WHERE user_id = #{userId} AND plan_date BETWEEN #{start} AND #{end}
+        ORDER BY plan_date ASC
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM study_plan WHERE user_id = #{userId}
+    </select>
+
+    <select id="countByCompleted" resultType="long">
+        SELECT COUNT(*) FROM study_plan WHERE user_id = #{userId} AND completed = #{completed}
+    </select>
+
+    <insert id="insert" parameterType="com.sandy.ruankao.entity.StudyPlan"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO study_plan(user_id, title, category, plan_date, duration_minutes, completed, notes)
+        VALUES(#{userId}, #{title}, #{category}, #{planDate}, #{durationMinutes}, #{completed}, #{notes})
+    </insert>
+
+    <update id="update" parameterType="com.sandy.ruankao.entity.StudyPlan">
+        UPDATE study_plan
+        SET title = #{title}, category = #{category}, plan_date = #{planDate},
+            duration_minutes = #{durationMinutes}, completed = #{completed}, notes = #{notes}
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <update id="toggle">
+        UPDATE study_plan SET completed = NOT completed WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM study_plan WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+</mapper>

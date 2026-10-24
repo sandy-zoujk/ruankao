@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sandy.ruankao.mapper.WrongQuestionMapper">
+    <resultMap id="wrongQuestionMap" type="com.sandy.ruankao.entity.WrongQuestion" autoMapping="true">
+        <id property="id" column="id" />
+        <association property="chapter" javaType="com.sandy.ruankao.entity.KnowledgeChapter">
+            <id property="id" column="chapter_id" />
+            <result property="userId" column="chapter_user_id" />
+            <result property="name" column="chapter_name" />
+            <result property="category" column="chapter_category" />
+            <result property="priority" column="chapter_priority" />
+            <result property="mastery" column="chapter_mastery" />
+        </association>
+    </resultMap>
+
+    <sql id="questionColumns">
+        SELECT w.*, c.user_id AS chapter_user_id, c.name AS chapter_name,
+               c.category AS chapter_category, c.priority AS chapter_priority,
+               c.mastery AS chapter_mastery
+        FROM wrong_question w
+        LEFT JOIN knowledge_chapter c
+          ON c.id = w.chapter_id AND c.user_id = w.user_id
+    </sql>
+
+    <select id="findAll" resultMap="wrongQuestionMap">
+        <include refid="questionColumns" />
+        WHERE w.user_id = #{userId}
+        ORDER BY w.created_at DESC
+    </select>
+
+    <select id="findById" resultMap="wrongQuestionMap">
+        <include refid="questionColumns" />
+        WHERE w.id = #{id} AND w.user_id = #{userId}
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM wrong_question WHERE user_id = #{userId}
+    </select>
+
+    <select id="countByMastered" resultType="long">
+        SELECT COUNT(*) FROM wrong_question WHERE user_id = #{userId} AND mastered = #{mastered}
+    </select>
+
+    <insert id="insert" parameterType="com.sandy.ruankao.entity.WrongQuestion"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO wrong_question(user_id, title, content, correct_answer, my_answer, error_reason,
+                                   chapter_id, review_count, mastered, next_review_date)
+        VALUES(#{userId}, #{title}, #{content}, #{correctAnswer}, #{myAnswer}, #{errorReason},
+               #{chapter.id}, #{reviewCount}, #{mastered}, #{nextReviewDate})
+    </insert>
+
+    <update id="updateReview" parameterType="com.sandy.ruankao.entity.WrongQuestion">
+        UPDATE wrong_question
+        SET review_count = #{reviewCount}, mastered = #{mastered}, next_review_date = #{nextReviewDate}
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM wrong_question WHERE id = #{id} AND user_id = #{userId}
+    </delete>
+</mapper>

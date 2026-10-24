@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.sandy.ruankao.mapper.KnowledgeChapterMapper">
+    <select id="findAll" resultType="com.sandy.ruankao.entity.KnowledgeChapter">
+        SELECT * FROM knowledge_chapter WHERE user_id = #{userId} ORDER BY priority DESC, name ASC
+    </select>
+
+    <select id="findById" resultType="com.sandy.ruankao.entity.KnowledgeChapter">
+        SELECT * FROM knowledge_chapter WHERE id = #{id} AND user_id = #{userId}
+    </select>
+
+    <select id="count" resultType="long">
+        SELECT COUNT(*) FROM knowledge_chapter WHERE user_id = #{userId}
+    </select>
+
+    <insert id="insert" parameterType="com.sandy.ruankao.entity.KnowledgeChapter"
+            useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO knowledge_chapter(user_id, name, category, priority, mastery, question_count, correct_count, last_review_date)
+        VALUES(#{userId}, #{name}, #{category}, #{priority}, #{mastery}, #{questionCount}, #{correctCount}, #{lastReviewDate})
+    </insert>
+
+    <update id="update" parameterType="com.sandy.ruankao.entity.KnowledgeChapter">
+        UPDATE knowledge_chapter
+        SET name = #{name}, category = #{category}, priority = #{priority}, mastery = #{mastery},
+            question_count = #{questionCount}, correct_count = #{correctCount}, last_review_date = #{lastReviewDate}
+        WHERE id = #{id} AND user_id = #{userId}
+    </update>
+</mapper>
