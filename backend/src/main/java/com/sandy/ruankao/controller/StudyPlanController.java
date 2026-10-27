@@ -1,5 +1,7 @@
 package com.sandy.ruankao.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.common.ApiResponse;
 import com.sandy.ruankao.config.AuthInterceptor;
 import com.sandy.ruankao.entity.StudyPlan;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/plans")
 public class StudyPlanController {
+  private static final Logger log = LoggerFactory.getLogger(StudyPlanController.class);
   private final StudyPlanMapper mapper;
 
   public StudyPlanController(StudyPlanMapper mapper) {
@@ -27,7 +30,9 @@ public class StudyPlanController {
   @GetMapping
   public ApiResponse<List<StudyPlan>> list(
       @RequestAttribute(AuthInterceptor.CURRENT_USER_ATTRIBUTE) AuthService.UserSession session) {
-    return ApiResponse.ok(mapper.findAll(session.getUserId()));
+    List<StudyPlan> items = mapper.findAll(session.getUserId());
+    log.debug("学习计划查询完成 userId={} count={}", session.getUserId(), items.size());
+    return ApiResponse.ok(items);
   }
 
   @PostMapping
@@ -37,6 +42,7 @@ public class StudyPlanController {
     plan.setId(null);
     plan.setUserId(session.getUserId());
     mapper.insert(plan);
+    log.info("学习计划新增处理完成 userId={} id={}", session.getUserId(), plan.getId());
     return ApiResponse.ok("计划已创建", mapper.findById(plan.getId(), session.getUserId()));
   }
 
@@ -55,6 +61,7 @@ public class StudyPlanController {
     plan.setCompleted(input.getCompleted());
     plan.setNotes(input.getNotes());
     mapper.update(plan);
+    log.info("学习计划更新处理完成 userId={} id={}", session.getUserId(), id);
     return ResponseEntity.ok(ApiResponse.ok("计划已更新", mapper.findById(id, session.getUserId())));
   }
 
@@ -65,6 +72,7 @@ public class StudyPlanController {
     if (mapper.findById(id, session.getUserId()) == null) return ResponseEntity.notFound().build();
     // 完成状态在 SQL 中原子取反，减少并发请求造成的状态覆盖。
     mapper.toggle(id, session.getUserId());
+    log.info("学习计划状态切换处理完成 userId={} id={}", session.getUserId(), id);
     return ResponseEntity.ok(ApiResponse.ok(mapper.findById(id, session.getUserId())));
   }
 
@@ -73,6 +81,7 @@ public class StudyPlanController {
       @RequestAttribute(AuthInterceptor.CURRENT_USER_ATTRIBUTE) AuthService.UserSession session,
       @PathVariable Long id) {
     if (mapper.delete(id, session.getUserId()) == 0) return ResponseEntity.notFound().build();
+    log.info("学习计划删除处理完成 userId={} id={}", session.getUserId(), id);
     return ResponseEntity.noContent().build();
   }
 }

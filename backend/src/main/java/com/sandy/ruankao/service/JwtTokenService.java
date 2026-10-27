@@ -1,5 +1,7 @@
 package com.sandy.ruankao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class JwtTokenService {
+  private static final Logger log = LoggerFactory.getLogger(JwtTokenService.class);
   private static final String ISSUER = "ruankao-study-system";
 
   private final SecretKey signingKey;
@@ -74,6 +77,7 @@ public class JwtTokenService {
           claims.get("role", String.class),
           claims.get("tokenVersion", Integer.class));
     } catch (JwtException | IllegalArgumentException exception) {
+      log.debug("JWT 校验未通过");
       return null;
     }
   }

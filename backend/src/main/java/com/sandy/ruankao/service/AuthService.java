@@ -1,5 +1,7 @@
 package com.sandy.ruankao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.entity.SysUser;
 import com.sandy.ruankao.mapper.SysUserMapper;
 import java.util.LinkedHashMap;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class AuthService {
+  private static final Logger log = LoggerFactory.getLogger(AuthService.class);
   private final SysUserMapper userMapper;
   private final JwtTokenService jwtTokenService;
   private final UserDataService userDataService;
@@ -50,6 +53,7 @@ public class AuthService {
     user.setTokenVersion(0);
     userMapper.insert(user);
     userDataService.provision(user.getId(), SysUser.ROLE_ADMIN.equals(user.getRole()));
+    log.info("用户注册处理完成 userId={} role={}", user.getId(), user.getRole());
     return user;
   }
 
@@ -57,9 +61,11 @@ public class AuthService {
     SysUser user = userMapper.findByUsername(username.trim());
     // 使用 BCrypt 对输入密码进行摘要比对，不读取或保存明文密码。
     if (user == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+      log.warn("登录失败 reason=凭证不匹配");
       throw new IllegalArgumentException("用户名或密码错误");
     }
     if (!Boolean.TRUE.equals(user.getEnabled())) {
+      log.warn("登录失败 reason=账号停用 userId={}", user.getId());
       throw new IllegalArgumentException("账号已停用，请联系管理员");
     }
     UserSession session = toSession(user);
@@ -71,6 +77,7 @@ public class AuthService {
             user.getNickname(),
             user.getRole(),
             user.getTokenVersion());
+    log.info("登录成功 userId={}", user.getId());
     return sessionResult(token, session);
   }
 
@@ -85,6 +92,7 @@ public class AuthService {
   public UserSession authenticateToken(String token) {
     JwtTokenService.JwtUser jwtUser = jwtTokenService.parseToken(token);
     if (jwtUser == null) return null;
+    log.debug("校验用户会话 userId={}", jwtUser.getUserId());
 
     // 账号状态和令牌版本以数据库为准，使停用账号、修改密码能够立即让旧 JWT 失效。
     SysUser user = userMapper.findById(jwtUser.getUserId());
@@ -102,6 +110,7 @@ public class AuthService {
       throw new IllegalArgumentException("新密码不能与当前密码相同");
     }
     userMapper.updatePassword(userId, passwordEncoder.encode(newPassword));
+    log.info("密码修改处理完成 userId={}", userId);
   }
 
   public Map<String, Object> sessionResult(String token, UserSession session) {

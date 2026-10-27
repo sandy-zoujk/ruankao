@@ -1,5 +1,7 @@
 package com.sandy.ruankao.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sandy.ruankao.common.ApiResponse;
 import com.sandy.ruankao.service.AuthService;
@@ -16,6 +18,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
  */
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
+  private static final Logger log = LoggerFactory.getLogger(AuthInterceptor.class);
   public static final String CURRENT_USER_ATTRIBUTE = "currentUser";
 
   private final AuthService authService;
@@ -44,6 +47,7 @@ public class AuthInterceptor implements HandlerInterceptor {
     }
 
     // 统一输出 JSON 格式的 401 响应，便于前端清除失效 JWT 并跳转登录页。
+    log.warn("鉴权拒绝 reason=会话无效");
     response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
     response.setCharacterEncoding(StandardCharsets.UTF_8.name());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);

@@ -1,5 +1,7 @@
 package com.sandy.ruankao.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sandy.ruankao.common.ApiResponse;
 import com.sandy.ruankao.entity.SysUser;
@@ -18,6 +20,7 @@ import org.springframework.web.servlet.HandlerInterceptor;
  */
 @Component
 public class AdminInterceptor implements HandlerInterceptor {
+  private static final Logger log = LoggerFactory.getLogger(AdminInterceptor.class);
   private final ObjectMapper objectMapper;
 
   public AdminInterceptor(ObjectMapper objectMapper) {
@@ -31,6 +34,7 @@ public class AdminInterceptor implements HandlerInterceptor {
         (AuthService.UserSession) request.getAttribute(AuthInterceptor.CURRENT_USER_ATTRIBUTE);
     if (session != null && SysUser.ROLE_ADMIN.equals(session.getRole())) return true;
 
+    log.warn("权限拒绝 reason=需要管理员 userId={}", session == null ? null : session.getUserId());
     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
     response.setCharacterEncoding(StandardCharsets.UTF_8.name());
     response.setContentType(MediaType.APPLICATION_JSON_VALUE);

@@ -28,6 +28,7 @@ public class WebConfig implements WebMvcConfigurer {
         .allowedOriginPatterns("http://localhost:*", "http://127.0.0.1:*")
         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
         .allowedHeaders("*")
+        .exposedHeaders("X-Trace-Id")
         .allowCredentials(true);
   }
 

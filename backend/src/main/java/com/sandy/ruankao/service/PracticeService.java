@@ -1,5 +1,7 @@
 package com.sandy.ruankao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.PreparedStatement;
 import java.time.LocalDate;
 import java.util.*;
@@ -12,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 /** @author zoujunke */
 public class PracticeService {
+  private static final Logger log = LoggerFactory.getLogger(PracticeService.class);
   private final JdbcTemplate jdbc;
 
   public PracticeService(JdbcTemplate jdbc) {
@@ -19,6 +22,7 @@ public class PracticeService {
   }
 
   public List<Map<String, Object>> chapters() {
+    log.debug("查询练习章节");
     return jdbc.query(
         "SELECT chapter,COUNT(*) AS questionCount FROM question_bank WHERE enabled=1 GROUP BY chapter ORDER BY chapter",
         (rs, n) -> {
@@ -62,7 +66,9 @@ public class PracticeService {
           attemptId,
           ids.get(i),
           i + 1);
-    return detail(userId, attemptId, false);
+    Map<String, Object> result = detail(userId, attemptId, false);
+    log.info("练习创建处理完成 userId={} attemptId={} questionCount={}", userId, attemptId, count);
+    return result;
   }
 
   @Transactional
@@ -104,7 +110,9 @@ public class PracticeService {
         score,
         attemptId,
         userId);
-    return detail(userId, attemptId, true);
+    Map<String, Object> result = detail(userId, attemptId, true);
+    log.info("练习提交处理完成 userId={} attemptId={} questionCount={}", userId, attemptId, questions.size());
+    return result;
   }
 
   public Map<String, Object> detail(Long userId, Long attemptId, boolean includeAnswers) {
@@ -135,10 +143,12 @@ public class PracticeService {
       questions.add(q);
     }
     attempt.put("questions", questions);
+    log.debug("练习详情查询完成 userId={} attemptId={} questionCount={}", userId, attemptId, questions.size());
     return attempt;
   }
 
   public List<Map<String, Object>> history(Long userId) {
+    log.debug("查询练习历史 userId={}", userId);
     return jdbc.query(
         "SELECT id,chapter,question_count AS questionCount,correct_count AS correctCount,score,started_at AS startedAt,submitted_at AS submittedAt FROM practice_attempt WHERE user_id=? AND submitted=1 ORDER BY submitted_at DESC LIMIT 50",
         (rs, n) -> {
@@ -159,6 +169,7 @@ public class PracticeService {
   }
 
   public Map<String, Object> stats(Long userId) {
+    log.debug("查询练习统计 userId={}", userId);
     return jdbc.queryForObject(
         "SELECT COUNT(*) AS attemptCount,COALESCE(SUM(question_count),0) AS questionCount,COALESCE(SUM(correct_count),0) AS correctCount FROM practice_attempt WHERE user_id=? AND submitted=1",
         (rs, n) -> {

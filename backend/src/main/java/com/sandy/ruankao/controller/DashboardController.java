@@ -1,5 +1,7 @@
 package com.sandy.ruankao.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.common.ApiResponse;
 import com.sandy.ruankao.config.AuthInterceptor;
 import com.sandy.ruankao.entity.KnowledgeChapter;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/dashboard")
 public class DashboardController {
+  private static final Logger log = LoggerFactory.getLogger(DashboardController.class);
   private final StudyPlanMapper planMapper;
   private final KnowledgeChapterMapper chapterMapper;
   private final WrongQuestionMapper wrongMapper;
@@ -64,6 +67,7 @@ public class DashboardController {
       mastery.add(item);
     }
     result.put("mastery", mastery);
+    log.debug("学习概览查询完成 userId={} planCount={} chapterCount={}", userId, totalPlans, mastery.size());
     return ApiResponse.ok(result);
   }
 }

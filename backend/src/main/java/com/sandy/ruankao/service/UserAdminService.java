@@ -1,5 +1,7 @@
 package com.sandy.ruankao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.dto.UserSummaryResponse;
 import com.sandy.ruankao.entity.SysUser;
 import com.sandy.ruankao.mapper.SysUserMapper;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Service;
  */
 @Service
 public class UserAdminService {
+  private static final Logger log = LoggerFactory.getLogger(UserAdminService.class);
   private final SysUserMapper userMapper;
   private final String defaultAdminUsername;
 
@@ -42,6 +45,7 @@ public class UserAdminService {
     response.put("total", userMapper.countFiltered(normalized, enabled, normalizedRole));
     response.put("page", page);
     response.put("size", size);
+    log.debug("用户分页查询完成 page={} size={} count={}", page, size, result.size());
     return response;
   }
 
@@ -59,6 +63,7 @@ public class UserAdminService {
       throw new IllegalArgumentException("系统必须至少保留一个启用的管理员");
     }
     userMapper.updateStatus(targetId, enabled);
+    log.info("账号状态调整处理完成 operatorId={} targetId={} enabled={}", operatorId, targetId, enabled);
     return summary(userMapper.findById(targetId));
   }
 
@@ -80,6 +85,7 @@ public class UserAdminService {
       throw new IllegalArgumentException("系统必须至少保留一个启用的管理员");
     }
     userMapper.updateRole(targetId, normalizedRole);
+    log.info("用户角色调整处理完成 operatorId={} targetId={} role={}", operatorId, targetId, normalizedRole);
     return summary(userMapper.findById(targetId));
   }
 

@@ -1,5 +1,7 @@
 package com.sandy.ruankao.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.common.ApiResponse;
 import java.util.*;
 import org.springframework.web.bind.annotation.*;
@@ -12,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/calculators")
 public class CalculatorController {
+  private static final Logger log = LoggerFactory.getLogger(CalculatorController.class);
   @PostMapping("/earned-value")
   public ApiResponse<Map<String, Object>> earnedValue(@RequestBody Map<String, Double> input) {
+    log.debug("执行计算工具 method=earnedValue");
     double pv = value(input, "pv");
     double ev = value(input, "ev");
     double ac = value(input, "ac");

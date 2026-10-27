@@ -1,5 +1,7 @@
 package com.sandy.ruankao.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.common.ApiResponse;
 import com.sandy.ruankao.config.AuthInterceptor;
 import com.sandy.ruankao.entity.KnowledgeChapter;
@@ -21,6 +23,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/chapters")
 public class KnowledgeChapterController {
+  private static final Logger log = LoggerFactory.getLogger(KnowledgeChapterController.class);
   private final KnowledgeChapterMapper mapper;
 
   public KnowledgeChapterController(KnowledgeChapterMapper mapper) {
@@ -39,13 +42,16 @@ public class KnowledgeChapterController {
     result.put("total", mapper.count(session.getUserId()));
     result.put("page", page);
     result.put("size", size);
+    log.debug("知识章节分页查询完成 userId={} page={} size={}", session.getUserId(), page, size);
     return ApiResponse.ok(result);
   }
 
   @GetMapping("/options")
   public ApiResponse<List<KnowledgeChapter>> options(
       @RequestAttribute(AuthInterceptor.CURRENT_USER_ATTRIBUTE) AuthService.UserSession session) {
-    return ApiResponse.ok(mapper.findAll(session.getUserId()));
+    List<KnowledgeChapter> items = mapper.findAll(session.getUserId());
+    log.debug("知识章节查询完成 userId={} count={}", session.getUserId(), items.size());
+    return ApiResponse.ok(items);
   }
 
   @PostMapping
@@ -55,6 +61,7 @@ public class KnowledgeChapterController {
     chapter.setId(null);
     chapter.setUserId(session.getUserId());
     mapper.insert(chapter);
+    log.info("知识章节新增处理完成 userId={} id={}", session.getUserId(), chapter.getId());
     return ApiResponse.ok(mapper.findById(chapter.getId(), session.getUserId()));
   }
 
@@ -75,6 +82,7 @@ public class KnowledgeChapterController {
     // 每次更新掌握情况时同步记录最后复习日期。
     chapter.setLastReviewDate(LocalDate.now());
     mapper.update(chapter);
+    log.info("知识章节更新处理完成 userId={} id={}", session.getUserId(), id);
     return ResponseEntity.ok(ApiResponse.ok(mapper.findById(id, session.getUserId())));
   }
 }

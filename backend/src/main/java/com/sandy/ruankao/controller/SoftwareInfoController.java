@@ -1,5 +1,7 @@
 package com.sandy.ruankao.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.common.ApiResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/software")
 public class SoftwareInfoController {
+  private static final Logger log = LoggerFactory.getLogger(SoftwareInfoController.class);
   private final String name;
   private final String version;
   private final String purpose;
@@ -37,6 +40,7 @@ public class SoftwareInfoController {
 
   @GetMapping("/info")
   public ApiResponse<Map<String, String>> info() {
+    log.debug("查询软件信息");
     Map<String, String> result = new LinkedHashMap<String, String>();
     result.put("name", name);
     result.put("version", version);

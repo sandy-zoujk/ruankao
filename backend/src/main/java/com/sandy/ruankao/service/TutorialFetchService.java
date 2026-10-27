@@ -1,5 +1,7 @@
 package com.sandy.ruankao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -13,6 +15,7 @@ import org.springframework.stereotype.Service;
 @Service
 /** @author zoujunke */
 public class TutorialFetchService {
+  private static final Logger log = LoggerFactory.getLogger(TutorialFetchService.class);
   private static final String USER_AGENT = "RuankaoStudyBot/1.0 (+tutorial-source-sync)";
   private static final int MAX_BYTES = 2 * 1024 * 1024;
 
@@ -43,6 +46,8 @@ public class TutorialFetchService {
       FetchResult result = parseHtml(response.parse().html(), url.toString());
       result.httpStatus = status;
       result.durationMs = System.currentTimeMillis() - start;
+      log.info("教程网页抓取完成 status={} durationMs={} sectionCount={}",
+          status, result.durationMs, result.sections.size());
       return result;
     }
     throw new IllegalArgumentException("网页重定向次数过多");
@@ -131,6 +136,7 @@ public class TutorialFetchService {
       }
       return true;
     } catch (Exception ignored) {
+      log.debug("robots 校验未完成，沿用允许抓取策略");
       return true;
     }
   }

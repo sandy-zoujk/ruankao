@@ -1,5 +1,7 @@
 package com.sandy.ruankao.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.util.List;
 import java.util.Map;
 import org.springframework.boot.ApplicationArguments;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Component;
     havingValue = "true",
     matchIfMissing = true)
 public class DatabaseMigrationRunner implements ApplicationRunner {
+  private static final Logger log = LoggerFactory.getLogger(DatabaseMigrationRunner.class);
   private final JdbcTemplate jdbcTemplate;
 
   public DatabaseMigrationRunner(JdbcTemplate jdbcTemplate) {
@@ -29,6 +32,8 @@ public class DatabaseMigrationRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
+    long start = System.nanoTime();
+    log.info("开始数据库结构迁移检查");
     // 本项目由业务层负责数据归属与删除规则，不在数据库层保留外键约束。
     dropAllForeignKeys();
     addColumnIfMissing(
@@ -83,6 +88,7 @@ public class DatabaseMigrationRunner implements ApplicationRunner {
         "knowledge_chapter",
         "uk_chapter_user_name",
         "ALTER TABLE knowledge_chapter ADD UNIQUE INDEX uk_chapter_user_name (user_id, name)");
+    log.info("数据库结构迁移检查完成 durationMs={}", (System.nanoTime() - start) / 1_000_000);
   }
 
   private void dropAllForeignKeys() {
@@ -90,6 +96,7 @@ public class DatabaseMigrationRunner implements ApplicationRunner {
         jdbcTemplate.queryForList(
             "SELECT TABLE_NAME, CONSTRAINT_NAME FROM information_schema.TABLE_CONSTRAINTS "
                 + "WHERE TABLE_SCHEMA = DATABASE() AND CONSTRAINT_TYPE = 'FOREIGN KEY'");
+    log.debug("待移除外键 count={}", foreignKeys.size());
     for (Map<String, Object> foreignKey : foreignKeys) {
       String table = String.valueOf(foreignKey.get("TABLE_NAME"));
       String constraint = String.valueOf(foreignKey.get("CONSTRAINT_NAME"));

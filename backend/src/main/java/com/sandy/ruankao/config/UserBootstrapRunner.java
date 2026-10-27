@@ -1,5 +1,7 @@
 package com.sandy.ruankao.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.entity.SysUser;
 import com.sandy.ruankao.mapper.SysUserMapper;
 import com.sandy.ruankao.service.UserDataService;
@@ -17,6 +19,7 @@ import org.springframework.stereotype.Component;
 @Component
 @Order(1)
 public class UserBootstrapRunner implements ApplicationRunner {
+  private static final Logger log = LoggerFactory.getLogger(UserBootstrapRunner.class);
   private final SysUserMapper userMapper;
   private final UserDataService userDataService;
   private final String adminUsername;
@@ -32,9 +35,11 @@ public class UserBootstrapRunner implements ApplicationRunner {
 
   @Override
   public void run(ApplicationArguments args) {
+    log.info("开始用户启动初始化");
     // 仅提升配置账号，不覆盖其他由管理员授权的管理员角色。
     userMapper.assignConfiguredAdmin(adminUsername);
     SysUser admin = userMapper.findByUsername(adminUsername);
     if (admin != null) userDataService.provision(admin.getId(), true);
+    log.info("用户启动初始化完成 processedCount={}", admin == null ? 0 : 1);
   }
 }

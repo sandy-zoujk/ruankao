@@ -1,5 +1,7 @@
 package com.sandy.ruankao.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sandy.ruankao.common.ApiResponse;
 import com.sandy.ruankao.config.AuthInterceptor;
 import com.sandy.ruankao.entity.KnowledgeChapter;
@@ -22,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/wrong-questions")
 public class WrongQuestionController {
+  private static final Logger log = LoggerFactory.getLogger(WrongQuestionController.class);
   private final WrongQuestionMapper mapper;
   private final KnowledgeChapterMapper chapterMapper;
 
@@ -33,7 +36,9 @@ public class WrongQuestionController {
   @GetMapping
   public ApiResponse<List<WrongQuestion>> list(
       @RequestAttribute(AuthInterceptor.CURRENT_USER_ATTRIBUTE) AuthService.UserSession session) {
-    return ApiResponse.ok(mapper.findAll(session.getUserId()));
+    List<WrongQuestion> items = mapper.findAll(session.getUserId());
+    log.debug("错题查询完成 userId={} count={}", session.getUserId(), items.size());
+    return ApiResponse.ok(items);
   }
 
   @PostMapping
@@ -54,6 +59,7 @@ public class WrongQuestionController {
     if (question.getNextReviewDate() == null)
       question.setNextReviewDate(LocalDate.now().plusDays(1));
     mapper.insert(question);
+    log.info("错题新增处理完成 userId={} id={}", session.getUserId(), question.getId());
     return ResponseEntity.ok(
         ApiResponse.ok("错题已保存", mapper.findById(question.getId(), session.getUserId())));
   }
@@ -71,6 +77,7 @@ public class WrongQuestionController {
     question.setReviewCount(question.getReviewCount() + 1);
     question.setNextReviewDate(mastered ? null : LocalDate.now().plusDays(3));
     mapper.updateReview(question);
+    log.info("错题复习状态更新处理完成 userId={} id={}", session.getUserId(), id);
     return ResponseEntity.ok(ApiResponse.ok(mapper.findById(id, session.getUserId())));
   }
 
@@ -79,6 +86,7 @@ public class WrongQuestionController {
       @RequestAttribute(AuthInterceptor.CURRENT_USER_ATTRIBUTE) AuthService.UserSession session,
       @PathVariable Long id) {
     if (mapper.delete(id, session.getUserId()) == 0) return ResponseEntity.notFound().build();
+    log.info("错题删除处理完成 userId={} id={}", session.getUserId(), id);
     return ResponseEntity.noContent().build();
   }
 }

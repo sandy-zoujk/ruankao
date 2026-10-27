@@ -1,5 +1,7 @@
 package com.sandy.ruankao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 import org.apache.poi.ss.usermodel.*;
@@ -14,6 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 /** @author zoujunke */
 public class QuestionBankService {
+  private static final Logger log = LoggerFactory.getLogger(QuestionBankService.class);
   public static final String[] HEADERS = {
     "题目编号", "章节", "题干", "选项A", "选项B", "选项C", "选项D", "正确答案", "解析", "是否启用"
   };
@@ -60,6 +63,7 @@ public class QuestionBankService {
     result.put("total", total);
     result.put("page", page);
     result.put("size", size);
+    log.debug("题库查询完成 page={} size={} count={}", page, size, items.size());
     return result;
   }
 
@@ -96,12 +100,14 @@ public class QuestionBankService {
               id);
       if (changed == 0) throw new IllegalArgumentException("题目不存在");
     }
+    log.info("题目保存处理完成 questionId={} created={}", id, id == null);
     return q;
   }
 
   public void setEnabled(Long id, boolean enabled) {
     if (jdbc.update("UPDATE question_bank SET enabled=? WHERE id=?", enabled, id) == 0)
       throw new IllegalArgumentException("题目不存在");
+    log.info("题目启用状态调整处理完成 questionId={} enabled={}", id, enabled);
   }
 
   @Transactional
@@ -115,6 +121,7 @@ public class QuestionBankService {
     }
     if (jdbc.update("DELETE FROM question_bank WHERE id=?", id) == 0)
       throw new IllegalArgumentException("题目不存在");
+    log.info("题目删除处理完成 questionId={}", id);
   }
 
   public byte[] template() throws Exception {
@@ -152,6 +159,7 @@ public class QuestionBankService {
         || file.getOriginalFilename() == null
         || !file.getOriginalFilename().toLowerCase().endsWith(".xlsx"))
       throw new IllegalArgumentException("请上传 .xlsx 格式文件");
+    log.info("开始导入题库 sizeBytes={}", file.getSize());
     int inserted = 0, updated = 0;
     List<String> errors = new ArrayList<>();
     try (Workbook wb = WorkbookFactory.create(file.getInputStream())) {
@@ -213,6 +221,7 @@ public class QuestionBankService {
     result.put("updated", updated);
     result.put("failed", errors.size());
     result.put("errors", errors);
+    log.info("题库导入处理完成 inserted={} updated={} failed={}", inserted, updated, errors.size());
     return result;
   }
 

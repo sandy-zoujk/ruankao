@@ -1,5 +1,7 @@
 package com.sandy.ruankao.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.sql.PreparedStatement;
 import java.util.*;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 /** @author zoujunke */
 public class TutorialService {
+  private static final Logger log = LoggerFactory.getLogger(TutorialService.class);
   private final JdbcTemplate jdbc;
   private final TutorialFetchService fetcher;
 
@@ -20,6 +23,7 @@ public class TutorialService {
   }
 
   public List<Map<String, Object>> adminSources() {
+    log.debug("查询教程来源");
     return jdbc.query(
         "SELECT s.*, (SELECT COUNT(*) FROM tutorial_version v WHERE v.source_id=s.id AND v.status='DRAFT') AS draft_count, (SELECT COUNT(*) FROM tutorial_version v WHERE v.source_id=s.id AND v.status='PUBLISHED') AS published_count FROM tutorial_source s ORDER BY s.updated_at DESC",
         (rs, n) -> {
@@ -45,6 +49,7 @@ public class TutorialService {
   }
 
   public List<Map<String, Object>> versions(Long sourceId) {
+    log.debug("查询教程版本");
     return jdbc.query(
         "SELECT id,title,summary,content_hash AS contentHash,status,fetched_at AS fetchedAt,published_at AS publishedAt,(SELECT COUNT(*) FROM tutorial_section s WHERE s.version_id=v.id) AS sectionCount FROM tutorial_version v WHERE source_id=? ORDER BY fetched_at DESC",
         (rs, n) -> {
@@ -92,12 +97,14 @@ public class TutorialService {
     m.put("sourceUrl", url);
     m.put("chapter", chapter);
     m.put("enabled", enabled);
+    log.info("教程来源保存处理完成 sourceId={} created={}", id, id == null);
     return m;
   }
 
   public Map<String, Object> sync(Long sourceId) {
     Map<String, Object> s = source(sourceId);
     long start = System.currentTimeMillis();
+    log.info("开始同步教程 sourceId={}", sourceId);
     try {
       TutorialFetchService.FetchResult result = fetcher.fetch(String.valueOf(s.get("sourceUrl")));
       Integer existing =
@@ -149,8 +156,13 @@ public class TutorialService {
       m.put("changed", existing == null || existing == 0);
       m.put("title", result.title);
       m.put("sectionCount", result.sections.size());
+      log.info("教程同步处理完成 sourceId={} versionId={} sectionCount={} changed={} durationMs={}",
+          sourceId, versionId, result.sections.size(), existing == null || existing == 0,
+          System.currentTimeMillis() - start);
       return m;
     } catch (Exception e) {
+      log.error("教程同步失败 sourceId={}", sourceId,
+          com.sandy.ruankao.logging.LogExceptions.withoutMessages(e));
       jdbc.update(
           "UPDATE tutorial_source SET sync_status='FAILED',last_error=?,last_duration_ms=?,last_synced_at=CURRENT_TIMESTAMP WHERE id=?",
           truncate(e.getMessage(), 1000),
@@ -177,15 +189,18 @@ public class TutorialService {
         "UPDATE tutorial_version SET status='PUBLISHED',published_at=CURRENT_TIMESTAMP WHERE id=? AND source_id=?",
         versionId,
         sourceId);
+    log.info("教程发布处理完成 sourceId={} versionId={}", sourceId, versionId);
   }
 
   public void unpublish(Long sourceId) {
     jdbc.update(
         "UPDATE tutorial_version SET status='ARCHIVED' WHERE source_id=? AND status='PUBLISHED'",
         sourceId);
+    log.info("教程下架处理完成 sourceId={}", sourceId);
   }
 
   public Map<String, Object> preview(Long sourceId, Long versionId) {
+    log.debug("预览教程");
     Map<String, Object> s = source(sourceId);
     Map<String, Object> v = version(versionId, sourceId, false);
     v.put("source", s);
@@ -194,6 +209,7 @@ public class TutorialService {
   }
 
   public List<Map<String, Object>> catalog(Long userId, String chapter) {
+    log.debug("查询教程目录");
     String condition = chapter == null || chapter.trim().isEmpty() ? "" : " AND s.chapter=?";
     Object[] args =
         condition.isEmpty() ? new Object[] {userId} : new Object[] {userId, chapter.trim()};
@@ -224,6 +240,7 @@ public class TutorialService {
   }
 
   public Map<String, Object> detail(Long userId, Long sourceId) {
+    log.debug("查询教程详情");
     Map<String, Object> s = source(sourceId);
     Object enabled = s.get("enabled");
     if ((enabled instanceof Boolean && !((Boolean) enabled))
@@ -236,6 +253,7 @@ public class TutorialService {
   }
 
   public Map<String, Object> progress(Long userId) {
+    log.debug("查询教程进度");
     List<Map<String, Object>> items = catalog(userId, null);
     long total = 0, done = 0;
     Map<String, long[]> chapters = new LinkedHashMap<>();
@@ -301,6 +319,7 @@ public class TutorialService {
           sourceId,
           sectionKey,
           completed);
+    log.info("教程学习状态更新处理完成 userId={} sourceId={} completed={}", userId, sourceId, completed);
   }
 
   private Map<String, Object> source(Long id) {
